@@ -1,0 +1,21 @@
+/* body {
+    background-color: rgba(44, 41, 41, 0.993);
+    height: 100vh;
+} */
+body {
+    margin: 0;
+    padding:0;
+    height: 100vh;
+    background: linear-gradient(to right, rgba(148, 38, 91, 0.651), #6e4883);
+}
+
+.button.is-ghost {
+    color: white;
+}
+
+.checkbox {
+    color: white;
+    float: right;
+    /* 
+    margin-right: 10%; */
+}

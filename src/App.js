@@ -2,22 +2,25 @@ import React, { useState, useEffect } from 'react'
 import randomWords from 'random-words'
 import './styles.css'
 
-const NUM_WORDS = 200;
-const SPACE_KEYCODE = 32;
-const ENTER_KEYCODE = 13;
+const NUM_WORDS = 200
+const SPACE_KEYCODE = 32
+const ENTER_KEYCODE = 13
+const BACKSPACE_KEYCODE = 8
 
 function App() {
     const [words, setWords] = useState([])
-    const [startingSeconds, setStartingSeconds] = useState(60)
+    const [finishedWords, setFinishedWords] = useState([])
+    const [startingSeconds, setStartingSeconds] = useState(30)
     const [countDown, setCountDown] = useState(startingSeconds)
     const [currInput, setCurrInput] = useState('')
     const [currWordIndex, setCurrWordIndex] = useState(0)
+    const [currCharIndex, setCurrCharIndex] = useState(-1)
     const [numCorrect, setNumCorrect] = useState(0)
     const [wordsPerMinute, setWordsPerMinute] = useState(0)
     const [intervalID, setIntervalID] = useState(0)
     const [status, setStatus] = useState('waiting')
     const [showStats, setShowStats] = useState(false)
-    const [selectedButton, setSelectedButton] = useState(0)
+    const [selectedButton, setSelectedButton] = useState(2)
 
     useEffect(() =>  {
         setWords(generateWords())
@@ -28,16 +31,16 @@ function App() {
         handleReset()
         switch (selectedButton){
             case 0:
-                setCountDown(60)
-                setStartingSeconds(60)
+                setCountDown(15)
+                setStartingSeconds(15)
                 break
             case 1: 
-                setCountDown(120)
-                setStartingSeconds(120)
+                setCountDown(30)
+                setStartingSeconds(30)
                 break
             case 2:
-                setCountDown(240)
-                setStartingSeconds(240)
+                setCountDown(60)
+                setStartingSeconds(60)
                 break
             default:
                 break
@@ -100,7 +103,7 @@ function App() {
 
         if (keyCode === SPACE_KEYCODE) {
             // compare user and correct words
-            const correctWord = words[currWordIndex]
+            const correctWord = words[0]
             const match = correctWord === currInput.trim()
 
             // clear input
@@ -108,8 +111,21 @@ function App() {
             setNumCorrect(match ? numCorrect + 1: numCorrect)
 
             // move to next word
-            setCurrWordIndex(currWordIndex + 1)
+            setFinishedWords([...finishedWords, correctWord])
+            setWords(words.slice(1))
+            setCurrWordIndex(currWordIndex)
+            setCurrCharIndex(-1)
         }
+        
+        else if (status === 'playing' && keyCode === BACKSPACE_KEYCODE) {
+            setCurrCharIndex(currCharIndex - 1)  
+        }
+        // regular key input (any letter)
+        else {
+            // move onto next letter
+            setCurrCharIndex(currCharIndex + 1)  
+        }
+
     }
 
     function handleReset() {
@@ -120,11 +136,12 @@ function App() {
             clearInterval(intervalID)
             setIntervalID(0)
         }
-
+        setFinishedWords([])
         setWords(generateWords())
         setStatus('waiting')
         setCurrInput('')
         setCurrWordIndex(0)
+        setCurrCharIndex(-1)
         setNumCorrect(0)
         setWordsPerMinute(0)
         setCountDown(startingSeconds)
@@ -135,6 +152,21 @@ function App() {
         setShowStats(!showStats)
     }
 
+    function getCharColor(wordIndex, charIndex, char, word) {
+        /*Determines color of each letter according to correctness*/
+        if (status=== 'playing' && wordIndex === currWordIndex && charIndex === currCharIndex && currInput) {
+            if (char === currInput.slice(-1)) {
+                return (<span className="has-text-grey">{char}</span>)
+            }
+            else {
+                return (<span className="has-text-danger">{char}</span>)
+            }
+        }
+        else {
+            return (<span className="has-text-light">{char}</span>)
+        }
+    }
+
     return (
         <div className='App'>
             <div className="columns">
@@ -143,21 +175,21 @@ function App() {
                         <p className="control">
                             <button onClick={() => {setSelectedButton(0)}} className={`button is-ghost + ${selectedButton === 0 ? "is-link" : ""}`}>
                                 <span className="icon is-small">
-                                    <i className="fas">60</i>
+                                    <i className="fas">15</i>
                                 </span>
                             </button>
                         </p>
                         <p className="control">
                             <button onClick={() => {setSelectedButton(1)}} className={`button is-ghost + ${selectedButton === 1 ? "is-link" : ""}`}>
                                 <span className="icon is-small">
-                                    <i className="fas fa-align-center">120</i>
+                                    <i className="fas fa-align-center">30</i>
                                 </span>
                             </button>
                         </p>
                         <p className="control">
                             <button onClick={() => {setSelectedButton(2)}} className={`button is-ghost + ${selectedButton === 2 ? "is-link" : ""}`}>
                                 <span className="icon is-small">
-                                    <i className="fas fa-align-right">240</i>
+                                    <i className="fas fa-align-right">60</i>
                                 </span>
                             </button>
                         </p>
@@ -181,7 +213,7 @@ function App() {
             <div className="columns">
                 <div className="column is-4 is-offset-4">
                     <div className="is-size-4 has-text-centered box">
-                        <h2>Accuracy {currWordIndex ? Math.trunc(((numCorrect / (currWordIndex)) * 100)) : 100}%</h2>
+                        <h2>Accuracy {finishedWords.length ? Math.trunc(((numCorrect / (finishedWords.length)) * 100)) : 100}%</h2>
                         <h2>{wordsPerMinute}</h2>
                     </div>
                 </div>
@@ -198,14 +230,25 @@ function App() {
             </div>
             <div className='section'>
                 <div className='card'>
-                    <div className='card-content'>
+                    <div className='card-content has-background-dark has-text-light'>
                         <div className='content'>
+                            {Array.isArray(finishedWords) ? finishedWords.map((word, i) => (
+                                // split word into char
+                                <span key={i}>
+                                    <span>
+                                        { word.split('').map((char) => (
+                                            <span className="has-text-grey">{char}</span>
+                                        )) }
+                                    </span>
+                                    <span> </span>
+                                </span>
+                            )) : null}
                             {words.map((word, i) => (
                                 // split word into char
                                 <span key={i}>
                                     <span>
                                         { word.split('').map((char, idx) => (
-                                            <span key={idx}>{char}</span>
+                                            getCharColor(i, idx, char, word)
                                         )) }
                                     </span>
                                     <span> </span>
@@ -227,7 +270,7 @@ function App() {
                     <div className="column is-half has-text-centered">
                         <div className="is-size-4 has-text-centered box">
                             <p className="is-size-5">Accuracy:</p>
-                            <p>{currWordIndex ? Math.trunc(((numCorrect / (currWordIndex)) * 100)) : 100}%</p>
+                            <p>{finishedWords.length ? Math.trunc(((numCorrect / (finishedWords.length)) * 100)) : 100}%</p>
                         </div>
                     </div>
                 </div>

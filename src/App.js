@@ -6,6 +6,9 @@ const NUM_WORDS = 200
 const SPACE_KEYCODE = 32
 const ENTER_KEYCODE = 13
 const BACKSPACE_KEYCODE = 8
+const A_KEYCODE = 65
+const Z_KEYCODE = 90
+const CTRL_KEYCODE = 17
 
 function App() {
     const [words, setWords] = useState([])
@@ -116,12 +119,17 @@ function App() {
             setCurrWordIndex(currWordIndex)
             setCurrCharIndex(-1)
         }
+
+        else if (status === 'playing' && (keyCode === CTRL_KEYCODE)){
+            setCurrCharIndex(-1)  
+        }
         
         else if (status === 'playing' && keyCode === BACKSPACE_KEYCODE) {
-            setCurrCharIndex(currCharIndex - 1)  
+            // dont go below 0
+            setCurrCharIndex(currCharIndex > 0 ? currCharIndex - 1 : -1)
         }
-        // regular key input (any letter)
-        else {
+        // only letter inputs
+        else if (keyCode >= A_KEYCODE && keyCode <= Z_KEYCODE) {
             // move onto next letter
             setCurrCharIndex(currCharIndex + 1)  
         }

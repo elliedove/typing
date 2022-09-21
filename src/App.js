@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import randomWords from 'random-words'
+import Icon from '@mdi/react'
+import { mdiCog } from '@mdi/js'
 import './styles.css'
 
 const NUM_WORDS = 200
@@ -22,7 +24,9 @@ function App() {
     const [intervalID, setIntervalID] = useState(0)
     const [status, setStatus] = useState('waiting')
     const [showStats, setShowStats] = useState(false)
-    const [selectedButton, setSelectedButton] = useState(2)
+    const [selectedButton, setSelectedButton] = useState(1)
+    const [modalActive, setModalActive] = useState(false)
+    const [modalInput, setModalInput] = useState("") 
 
     useEffect(() =>  {
         setWords(generateWords())
@@ -75,6 +79,10 @@ function App() {
             handleReset()
         }
     };
+
+    const handleModalInput = event => {
+        setModalInput(event.target.value)
+    }
 
     function generateWords() {
         // generate array of random words
@@ -157,7 +165,7 @@ function App() {
         setShowStats(!showStats)
     }
 
-    function getCharColor(wordIndex, charIndex, char, word) {
+    function getCharColor(wordIndex, charIndex, char) {
         /*Determines color of each letter according to correctness*/
         if (status=== 'playing' && wordIndex === 0 && charIndex === currCharIndex && currInput) {
             if (char === currInput.slice(-1)) {
@@ -172,8 +180,45 @@ function App() {
         }
     }
 
+    function handleModalActive() {
+        if (modalActive) {
+            setModalActive(false)
+        }
+        else {
+            setModalActive(true)
+        }
+    }
+
+
+    function handleSaveTimer() {
+        // if user input is a number <= 900 -> use this number
+        if (!isNaN(modalInput) && modalInput > 0) {
+            setStartingSeconds(modalInput)
+            setCountDown(modalInput)
+            setSelectedButton(-1)
+            handleModalActive()
+        }
+    }    
+
     return (
         <div className='App'>
+            <div className={`modal ${modalActive ? "is-active": ""}`}>
+                <div class="modal-background"></div>
+                <div class="modal-card has-background-dark">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">Change duration</p>
+                        <button class="delete" aria-label="close" onClick={handleModalActive}></button>
+                    </header>
+                    <section class="modal-card-body">
+                        Test duration: {isNaN(modalInput) ? startingSeconds : modalInput}
+                        <input type='text' className='input' defaultValue={startingSeconds} onChange={handleModalInput}/>
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button class="button" onClick={handleSaveTimer}>Save changes</button>
+                        <button class="button" onClick={handleModalActive}>Cancel</button>
+                    </footer>
+                </div>
+            </div>
             <div className="columns">
                 <div className="column is-1 is-offset-7 mt-4">
                     <div className="field has-addons">
@@ -195,6 +240,13 @@ function App() {
                             <button onClick={() => {setSelectedButton(2)}} className={`button is-ghost + ${selectedButton === 2 ? "is-link" : ""}`}>
                                 <span className="icon is-small">
                                     <i className="fas fa-align-right">60</i>
+                                </span>
+                            </button>
+                        </p>
+                        <p className="control">
+                            <button onClick={handleModalActive} className="button is-ghost">
+                                <span className="icon is-small">
+                                    <Icon path={mdiCog} size={3}/>
                                 </span>
                             </button>
                         </p>

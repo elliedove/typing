@@ -75,7 +75,7 @@ function App() {
     // pressing enter anywhere on page resets
     document.onkeydown = function(evt) {
         evt = evt || window.event;
-        if (evt.keyCode == ENTER_KEYCODE) {
+        if (evt.keyCode === ENTER_KEYCODE) {
             handleReset()
         }
     };

@@ -16,7 +16,6 @@ function App() {
     const [startingSeconds, setStartingSeconds] = useState(30)
     const [countDown, setCountDown] = useState(startingSeconds)
     const [currInput, setCurrInput] = useState('')
-    const [currWordIndex, setCurrWordIndex] = useState(0)
     const [currCharIndex, setCurrCharIndex] = useState(-1)
     const [numCorrect, setNumCorrect] = useState(0)
     const [wordsPerMinute, setWordsPerMinute] = useState(0)
@@ -82,9 +81,9 @@ function App() {
        return new Array(NUM_WORDS).fill(null).map(() => randomWords()); 
     }
 
-    function startCountDown() {
+    function startCountDown({keyCode}) {
         // begins counting down from SECONDS only if timer is original value
-        if (status === 'waiting' || status === 'finished') {
+        if ((keyCode >= A_KEYCODE && keyCode <= Z_KEYCODE) && (status === 'waiting' || status === 'finished')) {
             setStatus("playing")
             let interval = setInterval(() => {
                 setCountDown((prevCountDown) => {
@@ -116,7 +115,6 @@ function App() {
             // move to next word
             setFinishedWords([...finishedWords, correctWord])
             setWords(words.slice(1))
-            // setCurrWordIndex(currWordIndex)
             setCurrCharIndex(-1)
         }
 
@@ -148,7 +146,6 @@ function App() {
         setWords(generateWords())
         setStatus('waiting')
         setCurrInput('')
-        // setCurrWordIndex(0)
         setCurrCharIndex(-1)
         setNumCorrect(0)
         setWordsPerMinute(0)
@@ -230,7 +227,7 @@ function App() {
 
             <div className='columns ml-5 mr-5'>
                 <div className="column is-5 is-offset-3">
-                    <input type="text" disabled={status === 'finished'} className="input" onKeyDown={function(event){ handleKeyDown(event); startCountDown(); }} value={currInput} onChange={(e) => setCurrInput(e.target.value)}/>
+                    <input type="text" disabled={status === 'finished'} className="input" onKeyDown={function(event){ handleKeyDown(event); startCountDown(event); }} value={currInput} onChange={(e) => setCurrInput(e.target.value)}/>
                 </div>
                 <div className="column is-1">
                     <div className="button button is-info is-half is-fluid" onClick={handleReset}>Reset</div>

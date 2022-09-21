@@ -116,7 +116,7 @@ function App() {
             // move to next word
             setFinishedWords([...finishedWords, correctWord])
             setWords(words.slice(1))
-            setCurrWordIndex(currWordIndex)
+            // setCurrWordIndex(currWordIndex)
             setCurrCharIndex(-1)
         }
 
@@ -148,7 +148,7 @@ function App() {
         setWords(generateWords())
         setStatus('waiting')
         setCurrInput('')
-        setCurrWordIndex(0)
+        // setCurrWordIndex(0)
         setCurrCharIndex(-1)
         setNumCorrect(0)
         setWordsPerMinute(0)
@@ -162,7 +162,7 @@ function App() {
 
     function getCharColor(wordIndex, charIndex, char, word) {
         /*Determines color of each letter according to correctness*/
-        if (status=== 'playing' && wordIndex === currWordIndex && charIndex === currCharIndex && currInput) {
+        if (status=== 'playing' && wordIndex === 0 && charIndex === currCharIndex && currInput) {
             if (char === currInput.slice(-1)) {
                 return (<span className="has-text-grey">{char}</span>)
             }

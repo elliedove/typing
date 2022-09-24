@@ -216,7 +216,6 @@ function App() {
         if (!isNaN(modalInput) && modalInput > 0) {
             setStartingSeconds(modalInput)
             setCountDown(modalInput)
-            setSelectedButton(-1)
             handleModalActive()
         }
     }    
@@ -265,7 +264,7 @@ function App() {
                             </button>
                         </p>
                         <p className="control">
-                            <button onClick={handleModalActive} className="button is-ghost">
+                            <button onClick={() => {handleModalActive(); setSelectedButton(3)}} className={`button is-ghost + ${selectedButton === 3 ? "is-link" : ""}`}>
                                 <span className="icon is-small">
                                     <Icon path={mdiCog} size={3}/>
                                 </span>

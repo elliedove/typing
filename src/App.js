@@ -302,7 +302,7 @@ function App() {
                     <input type="text" disabled={status === 'finished'} className="input" onKeyDown={function(event){ handleKeyDown(event); startCountDown(event); }} value={currInput} onChange={(e) => setCurrInput(e.target.value)}/>
                 </div>
                 <div className="column is-1">
-                    <div className="button button is-info is-half is-fluid" onClick={handleReset}>Reset</div>
+                    <div className="button button is-half is-fluid is-link" onClick={handleReset}>Reset</div>
                 </div>
             </div>
             <div className='section'>

@@ -6,7 +6,7 @@ body {
     margin: 0;
     padding:0;
     height: 100vh;
-    background: linear-gradient(to right, rgba(148, 38, 91, 0.651), #6e4883);
+    background: gray
 }
 
 .button.is-ghost {

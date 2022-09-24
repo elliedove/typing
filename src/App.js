@@ -11,15 +11,18 @@ const BACKSPACE_KEYCODE = 8
 const A_KEYCODE = 65
 const Z_KEYCODE = 90
 const CTRL_KEYCODE = 17
+const WORDS_PER_ROW = 10
 
 function App() {
     const [words, setWords] = useState([])
     const [finishedWords, setFinishedWords] = useState([])
+    const [wordRowIdx, setWordRowIdx] = useState(0)
     const [startingSeconds, setStartingSeconds] = useState(30)
     const [countDown, setCountDown] = useState(startingSeconds)
     const [currInput, setCurrInput] = useState('')
     const [currCharIndex, setCurrCharIndex] = useState(-1)
     const [numCorrect, setNumCorrect] = useState(0)
+    const [numComplete, setNumComplete] = useState(0)
     const [wordsPerMinute, setWordsPerMinute] = useState(0)
     const [intervalID, setIntervalID] = useState(0)
     const [status, setStatus] = useState('waiting')
@@ -31,6 +34,7 @@ function App() {
     useEffect(() =>  {
         setWords(generateWords())
     }, [])
+
 
     // when selectedButton changes, reset and change the countdown total
     useEffect(() => {
@@ -86,7 +90,13 @@ function App() {
 
     function generateWords() {
         // generate array of random words
-       return new Array(NUM_WORDS).fill(null).map(() => randomWords()); 
+        let arr = new Array(NUM_WORDS).fill(null).map(() => randomWords()); 
+        let res = []
+        for (let i = 0; i < arr.length; i = i + WORDS_PER_ROW) {
+            res.push(arr.slice(i, i + WORDS_PER_ROW))
+        }
+
+        return res
     }
 
     function startCountDown({keyCode}) {
@@ -113,16 +123,28 @@ function App() {
 
         if (keyCode === SPACE_KEYCODE) {
             // compare user and correct words
-            const correctWord = words[0]
+            const correctWord = words[0][wordRowIdx]
             const match = correctWord === currInput.trim()
 
             // clear input
             setCurrInput('')
             setNumCorrect(match ? numCorrect + 1: numCorrect)
+            setNumComplete(numComplete + 1)
 
             // move to next word
             setFinishedWords([...finishedWords, correctWord])
-            setWords(words.slice(1))
+
+            // remove the row if finished
+            if (words[0].length === 1) {
+                setWords([...words.slice(1)])
+                setFinishedWords([])
+            }
+            // only remove the current word if more remain
+            else {
+                setWords([...[words[wordRowIdx].slice(1)], ...words.slice(wordRowIdx + 1)])
+                
+            }
+
             setCurrCharIndex(-1)
         }
 
@@ -144,7 +166,6 @@ function App() {
 
     function handleReset() {
         /*actions performed with enter or reset button is hit: resets all relevant state*/
-
         // reset timer
         if (intervalID) {
             clearInterval(intervalID)
@@ -165,18 +186,18 @@ function App() {
         setShowStats(!showStats)
     }
 
-    function getCharColor(wordIndex, charIndex, char) {
+    function getCharColor(rowIndex, wordIndex,  charIndex, char) {
         /*Determines color of each letter according to correctness*/
-        if (status=== 'playing' && wordIndex === 0 && charIndex === currCharIndex && currInput) {
+        if (status=== 'playing' && rowIndex == 0 && wordIndex === 0 && charIndex === currCharIndex && currInput) {
             if (char === currInput.slice(-1)) {
-                return (<span className="has-text-grey">{char}</span>)
+                return (<span className="has-text-grey is-size-4">{char}</span>)
             }
             else {
-                return (<span className="has-text-danger">{char}</span>)
+                return (<span className="has-text-danger is-size-4">{char}</span>)
             }
         }
         else {
-            return (<span className="has-text-light">{char}</span>)
+            return (<span className="has-text-light is-size-4">{char}</span>)
         }
     }
 
@@ -203,19 +224,19 @@ function App() {
     return (
         <div className='App'>
             <div className={`modal ${modalActive ? "is-active": ""}`}>
-                <div class="modal-background"></div>
-                <div class="modal-card has-background-dark">
-                    <header class="modal-card-head">
-                        <p class="modal-card-title">Change duration</p>
-                        <button class="delete" aria-label="close" onClick={handleModalActive}></button>
+                <div className="modal-background"></div>
+                <div className="modal-card has-background-dark">
+                    <header className="modal-card-head">
+                        <p className="modal-card-title">Change duration</p>
+                        <button className="delete" aria-label="close" onClick={handleModalActive}></button>
                     </header>
-                    <section class="modal-card-body">
+                    <section className="modal-card-body">
                         Test duration: {isNaN(modalInput) ? startingSeconds : modalInput}
                         <input type='text' className='input' defaultValue={startingSeconds} onChange={handleModalInput}/>
                     </section>
-                    <footer class="modal-card-foot">
-                        <button class="button" onClick={handleSaveTimer}>Save changes</button>
-                        <button class="button" onClick={handleModalActive}>Cancel</button>
+                    <footer className="modal-card-foot">
+                        <button className="button" onClick={handleSaveTimer}>Save changes</button>
+                        <button className="button" onClick={handleModalActive}>Cancel</button>
                     </footer>
                 </div>
             </div>
@@ -270,7 +291,7 @@ function App() {
             <div className="columns">
                 <div className="column is-4 is-offset-4">
                     <div className="is-size-4 has-text-centered box">
-                        <h2>Accuracy {finishedWords.length ? Math.trunc(((numCorrect / (finishedWords.length)) * 100)) : 100}%</h2>
+                        <h2>Accuracy {numComplete ? Math.trunc(((numCorrect / (numComplete)) * 100)) : 100}%</h2>
                         <h2>{wordsPerMinute}</h2>
                     </div>
                 </div>
@@ -286,7 +307,7 @@ function App() {
                 </div>
             </div>
             <div className='section'>
-                <div className='card'>
+                <div className='card ml-5 mr-5'>
                     <div className='card-content has-background-dark has-text-light'>
                         <div className='content'>
                             {Array.isArray(finishedWords) ? finishedWords.map((word, i) => (
@@ -294,23 +315,31 @@ function App() {
                                 <span key={i}>
                                     <span>
                                         { word.split('').map((char) => (
-                                            <span className="has-text-grey">{char}</span>
+                                            <span className="has-text-grey is-size-4">{char}</span>
                                         )) }
                                     </span>
-                                    <span> </span>
+                                    <span className='is-size-4'> </span>
                                 </span>
                             )) : null}
-                            {words.map((word, i) => (
-                                // split word into char
-                                <span key={i}>
+
+                            
+                            { words.slice(0,3).map((row, i) => (
+                                // split row into words
+                                <span key={i}> 
                                     <span>
-                                        { word.split('').map((char, idx) => (
-                                            getCharColor(i, idx, char, word)
-                                        )) }
+                                    {row.map((word, j) => (
+                                        <span>
+                                            <span>{ word.split('').map((char, idx) => (
+                                                getCharColor(i, j, idx, char, word)
+                                            )) }</span>
+                                        <span className='is-size-4'> </span>
+                                        </span>
+                                        
+                                    )) }
                                     </span>
-                                    <span> </span>
+                                    <br></br>
                                 </span>
-                            ))}
+                            )) }
                         </div>
                     </div>
                 </div>
@@ -327,7 +356,7 @@ function App() {
                     <div className="column is-half has-text-centered">
                         <div className="is-size-4 has-text-centered box">
                             <p className="is-size-5">Accuracy:</p>
-                            <p>{finishedWords.length ? Math.trunc(((numCorrect / (finishedWords.length)) * 100)) : 100}%</p>
+                            <p>{numComplete ? Math.trunc(((numCorrect / (numComplete)) * 100)) : 100}%</p>
                         </div>
                     </div>
                 </div>

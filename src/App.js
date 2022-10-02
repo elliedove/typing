@@ -257,6 +257,12 @@ function App() {
         }
     }    
 
+    function handleClearHistory() {
+        /*resets completed test history */
+        setCompletedTests([])
+        window.localStorage.clear()
+    }
+
     return (
         <div className='App'>
             <div className={`modal ${modalActive ? "is-active": ""}`}>
@@ -419,6 +425,11 @@ function App() {
                     </div>
                 </div>
             )}
+            <div className="columns">
+                <div className="column is-2 is-offset-5">
+                    <div className="button button is-half is-fluid is-link" onClick={handleClearHistory}>Clear history</div>
+                </div>
+            </div>
         </div>
     );
 }

@@ -35,18 +35,27 @@ function App() {
 
     useEffect(() =>  {
         setWords(generateWords())
+
+        // get stored past tests
+        const data = window.localStorage.getItem('TYPING_APP_STATE');
+        if ( data !== null ) setCompletedTests(JSON.parse(data));
     }, [])
 
 
     // update 'finished tests' list when a test is finished
     useEffect(() => {
         if (status === "finished") {
-            setCompletedTests([{
+            var newCompleted = [{
                 'datetime': getDateTime(),
                 'wpm': wordsPerMinute,
                 'accuracy': numComplete ? Math.trunc(((numCorrect / (numComplete)) * 100)) : 100,
                 'lengthSec': startingSeconds,
-            }, ...completedTests])
+            }, ...completedTests]
+
+            setCompletedTests(newCompleted)
+
+            console.log("storing locally", newCompleted)
+            window.localStorage.setItem('TYPING_APP_STATE', JSON.stringify(newCompleted));
         }
     }, [status])
 
@@ -216,7 +225,7 @@ function App() {
 
     function getCharColor(rowIndex, wordIndex,  charIndex, char) {
         /*Determines color of each letter according to correctness*/
-        if (status=== 'playing' && rowIndex == 0 && wordIndex === 0 && charIndex === currCharIndex && currInput) {
+        if (status === 'playing' && rowIndex === 0 && wordIndex === 0 && charIndex === currCharIndex && currInput) {
             if (char === currInput.slice(-1)) {
                 return (<span className="has-text-grey is-size-4">{char}</span>)
             }

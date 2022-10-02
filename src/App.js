@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import randomWords from 'random-words'
 import Icon from '@mdi/react'
+import 'bulma-list/css/bulma-list.css'
 import { mdiCog } from '@mdi/js'
 import './styles.css'
 
@@ -17,6 +18,7 @@ function App() {
     const [words, setWords] = useState([])
     const [finishedWords, setFinishedWords] = useState([])
     const [wordRowIdx, setWordRowIdx] = useState(0)
+    const [completedTests, setCompletedTests] = useState([])
     const [startingSeconds, setStartingSeconds] = useState(30)
     const [countDown, setCountDown] = useState(startingSeconds)
     const [currInput, setCurrInput] = useState('')
@@ -35,6 +37,18 @@ function App() {
         setWords(generateWords())
     }, [])
 
+
+    // update 'finished tests' list when a test is finished
+    useEffect(() => {
+        if (status === "finished") {
+            setCompletedTests([{
+                'datetime': getDateTime(),
+                'wpm': wordsPerMinute,
+                'accuracy': numComplete ? Math.trunc(((numCorrect / (numComplete)) * 100)) : 100,
+                'lengthSec': startingSeconds,
+            }, ...completedTests])
+        }
+    }, [status])
 
     // when selectedButton changes, reset and change the countdown total
     useEffect(() => {
@@ -86,6 +100,20 @@ function App() {
 
     const handleModalInput = event => {
         setModalInput(event.target.value)
+    }
+
+    function getDateTime() {
+        /*generated month/day string*/
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var time = today.toLocaleString("en-US", {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        })
+        today = mm + '/' + dd
+        return [today, time]
     }
 
     function generateWords() {
@@ -344,7 +372,7 @@ function App() {
                 </div>
             </div>
             {status === 'finished' && (
-                <div className="section">
+            <div className="section">
                 <div className="columns">
                     <div className="column is-half has-text-centered">
                         <div className="is-size-4 has-text-centered box">
@@ -360,6 +388,27 @@ function App() {
                     </div>
                 </div>
             </div>
+            )}
+            {(completedTests.length > 0 && 
+                <div className="section">
+                    <div className="box has-background-dark">
+                        <div className="list">
+                            {completedTests.map((test) => (
+                                <div className="list-item">
+                                    <div className="list-item-content">
+                                        <div className="list-item-title has-text-white">{test.datetime[0]} - {test.datetime[1]}</div>
+                                        <div className="list-item-description has-text-gray">
+                                            <p>{test.lengthSec} seconds</p>
+                                            <p>{test.wpm} words per minute | {test.accuracy}% accuracy</p>
+                                            
+                                        </div>
+
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

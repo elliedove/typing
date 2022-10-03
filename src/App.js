@@ -6,18 +6,11 @@ import { mdiCog } from '@mdi/js'
 import './styles.css'
 
 const NUM_WORDS = 200
-const SPACE_KEYCODE = 32
-const ENTER_KEYCODE = 13
-const BACKSPACE_KEYCODE = 8
-const A_KEYCODE = 65
-const Z_KEYCODE = 90
-const CTRL_KEYCODE = 17
 const WORDS_PER_ROW = 10
 
 function App() {
     const [words, setWords] = useState([])
     const [finishedWords, setFinishedWords] = useState([])
-    const [wordRowIdx, setWordRowIdx] = useState(0)
     const [completedTests, setCompletedTests] = useState([])
     const [startingSeconds, setStartingSeconds] = useState(30)
     const [countDown, setCountDown] = useState(startingSeconds)
@@ -54,6 +47,7 @@ function App() {
 
             setCompletedTests(newCompleted)
 
+            // cache 
             console.log("storing locally", newCompleted)
             window.localStorage.setItem('TYPING_APP_STATE', JSON.stringify(newCompleted));
         }
@@ -102,8 +96,12 @@ function App() {
     // pressing enter anywhere on page resets
     document.onkeydown = function(evt) {
         evt = evt || window.event;
-        if (evt.keyCode === ENTER_KEYCODE) {
+        if (evt.key === "Enter") {
             handleReset()
+        }
+
+        if (evt.key === "Escape" && modalActive) {
+            handleModalActive()
         }
     };
 
@@ -136,9 +134,9 @@ function App() {
         return res
     }
 
-    function startCountDown({keyCode}) {
+    function startCountDown({key}) {
         // begins counting down from SECONDS only if timer is original value
-        if ((keyCode >= A_KEYCODE && keyCode <= Z_KEYCODE) && (status === 'waiting' || status === 'finished')) {
+        if ((key >= 'a' && key <= 'z') && (status === 'waiting' || status === 'finished')) {
             setStatus("playing")
             let interval = setInterval(() => {
                 setCountDown((prevCountDown) => {
@@ -155,12 +153,11 @@ function App() {
         }
     } 
 
-    function handleKeyDown({keyCode}) {
+    function handleKeyDown({key}) {
         /*actions to run when key is pressed in textbox*/
-
-        if (keyCode === SPACE_KEYCODE) {
+        if (key === " " && status == 'playing') {
             // compare user and correct words
-            const correctWord = words[0][wordRowIdx]
+            const correctWord = words[0][0]
             const match = correctWord === currInput.trim()
 
             // clear input
@@ -178,23 +175,23 @@ function App() {
             }
             // only remove the current word if more remain
             else {
-                setWords([...[words[wordRowIdx].slice(1)], ...words.slice(wordRowIdx + 1)])
+                setWords([...[words[0].slice(1)], ...words.slice(0 + 1)])
                 
             }
 
             setCurrCharIndex(-1)
         }
 
-        else if (status === 'playing' && (keyCode === CTRL_KEYCODE)){
+        else if (status === 'playing' && KeyboardEvent === "Control"){
             setCurrCharIndex(-1)  
         }
         
-        else if (status === 'playing' && keyCode === BACKSPACE_KEYCODE) {
+        else if (status === 'playing' && key === "Backspace") {
             // dont go below 0
             setCurrCharIndex(currCharIndex > 0 ? currCharIndex - 1 : -1)
         }
         // only letter inputs
-        else if (keyCode >= A_KEYCODE && keyCode <= Z_KEYCODE) {
+        else if (key >= "a" && key <= "z") {
             // move onto next letter
             setCurrCharIndex(currCharIndex + 1)  
         }
@@ -425,11 +422,13 @@ function App() {
                     </div>
                 </div>
             )}
-            <div className="columns">
-                <div className="column is-2 is-offset-5">
-                    <div className="button button is-half is-fluid is-link" onClick={handleClearHistory}>Clear history</div>
+            {completedTests.length > 0 &&
+                <div className="columns">
+                    <div className="column is-2 is-offset-5">
+                        <div className="button button is-half is-fluid is-link" onClick={handleClearHistory}>Clear history</div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     );
 }

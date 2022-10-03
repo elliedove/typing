@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import randomWords from 'random-words'
 import Icon from '@mdi/react'
 import 'bulma-list/css/bulma-list.css'
-import { mdiCog } from '@mdi/js'
+import { mdiCog, mdiCloseCircle, mdiCompassOutline } from '@mdi/js'
 import './styles.css'
 
 const NUM_WORDS = 200
@@ -48,7 +48,6 @@ function App() {
             setCompletedTests(newCompleted)
 
             // cache 
-            console.log("storing locally", newCompleted)
             window.localStorage.setItem('TYPING_APP_STATE', JSON.stringify(newCompleted));
         }
     }, [status])
@@ -182,7 +181,7 @@ function App() {
             setCurrCharIndex(-1)
         }
 
-        else if (status === 'playing' && KeyboardEvent === "Control"){
+        else if (status === 'playing' && key === "Control"){
             setCurrCharIndex(-1)  
         }
         
@@ -260,6 +259,16 @@ function App() {
         window.localStorage.clear()
     }
 
+    const handleRemoveTest = (e) => {
+        /*removes single test from history */
+        var index = e.currentTarget.id
+        var newArr = [...completedTests]
+        newArr.splice(index, 1)
+        setCompletedTests(newArr)
+
+        window.localStorage.setItem('TYPING_APP_STATE', JSON.stringify(newArr));
+    }
+
     return (
         <div className='App'>
             <div className={`modal ${modalActive ? "is-active": ""}`}>
@@ -319,13 +328,11 @@ function App() {
                     </label>
                 </div>
             </div>
-
             <div className="section">
                 <div className="is-size-1 has-text-centered">
                     <h2>{countDown}</h2>
                 </div>
             </div>
-
             {showStats && (
             <div className="columns">
                 <div className="column is-4 is-offset-4">
@@ -336,7 +343,6 @@ function App() {
                 </div>
             </div>
             )}
-
             <div className='columns ml-5 mr-5'>
                 <div className="column is-5 is-offset-3">
                     <input type="text" disabled={status === 'finished'} className="input" onKeyDown={function(event){ handleKeyDown(event); startCountDown(event); }} value={currInput} onChange={(e) => setCurrInput(e.target.value)}/>
@@ -360,8 +366,6 @@ function App() {
                                     <span className='is-size-4'> </span>
                                 </span>
                             )) : null}
-
-                            
                             { words.slice(0,3).map((row, i) => (
                                 // split row into words
                                 <span key={i}> 
@@ -373,7 +377,6 @@ function App() {
                                             )) }</span>
                                         <span className='is-size-4'> </span>
                                         </span>
-                                        
                                     )) }
                                     </span>
                                     <br></br>
@@ -403,32 +406,37 @@ function App() {
             )}
             {(completedTests.length > 0 && 
                 <div className="section">
+                    <div className="columns is-gapless">
+                        <div className="column is-2 is-offset-1">
+                            <div className="button button is-half is-fluid is-link" onClick={handleClearHistory}>Clear history</div>
+                        </div>
+                    </div>  
                     <div className="box has-background-dark">
                         <div className="list">
-                            {completedTests.map((test) => (
+                            {completedTests.map((test, testIndex) => (
                                 <div className="list-item">
                                     <div className="list-item-content">
                                         <div className="list-item-title has-text-white">{test.datetime[0]} - {test.datetime[1]}</div>
                                         <div className="list-item-description has-text-gray">
                                             <p>{test.lengthSec} seconds</p>
                                             <p>{test.wpm} words per minute | {test.accuracy}% accuracy</p>
-                                            
                                         </div>
-
                                     </div>
-                                </div>
+                                    <div className="list-item-controls">
+                                        <div className="buttons is-right">
+                                            <button id={testIndex} className="button has-background-grey-light" onClick={handleRemoveTest}>
+                                                <span className="icon is-small">
+                                                    <Icon path={mdiCloseCircle} size={3}/>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div> 
                             ))}
                         </div>
                     </div>
                 </div>
             )}
-            {completedTests.length > 0 &&
-                <div className="columns">
-                    <div className="column is-2 is-offset-5">
-                        <div className="button button is-half is-fluid is-link" onClick={handleClearHistory}>Clear history</div>
-                    </div>
-                </div>
-            }
         </div>
     );
 }

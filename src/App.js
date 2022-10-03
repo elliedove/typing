@@ -163,6 +163,7 @@ function App() {
             setCurrInput('')
             setNumCorrect(match ? numCorrect + 1: numCorrect)
             setNumComplete(numComplete + 1)
+            console.log(numCorrect, numComplete)
 
             // move to next word
             setFinishedWords([...finishedWords, correctWord])
@@ -210,6 +211,7 @@ function App() {
         setCurrInput('')
         setCurrCharIndex(-1)
         setNumCorrect(0)
+        setNumComplete(0)
         setWordsPerMinute(0)
         setCountDown(startingSeconds)
     }

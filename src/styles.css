@@ -1,8 +1,22 @@
 html, body {
-    margin: 0;
-    min-height: 100%;
-    width: 100%;
-    background: gray
+    background: linear-gradient(-45deg, #7ec5ff, #d85c8b, #abee0f, #8280ff);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .button.is-ghost {
